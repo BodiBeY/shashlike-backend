@@ -49,3 +49,39 @@ def get_user_stat(username: str = Query(...)):
 
     except Exception as e:
         return {"found": False, "error": str(e)}
+
+
+# Ендпоінт для отримання списку всіх тестів
+@app.get("/get_quizzes")
+def get_all_quizzes():
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, title FROM quizzes;")
+    quizzes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return {"quizzes": [{"id": q[0], "title": q[1]} for q in quizzes]}
+
+# Ендпоінт для отримання статистики по конкретному тесту
+@app.get("/get_stat_by_quiz")
+def get_stat_by_quiz(username: str, quiz_id: int):
+    clean_username = username.replace("@", "").strip()
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+    
+    query = """
+        SELECT tr.score, tr.status 
+        FROM test_results tr
+        JOIN users u ON u.id = tr.user_id
+        WHERE u.username = %s AND tr.quiz_id = %s
+        ORDER BY tr.finished_at DESC LIMIT 1;
+    """
+    cursor.execute(query, (clean_username, quiz_id))
+    result = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    if result:
+        return {"found": True, "score": result[0], "status": result[1]}
+    return {"found": False, "score": 0, "status": "Немає даних"}
