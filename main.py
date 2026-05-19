@@ -16,10 +16,15 @@ def get_user_stat(username: str = Query(...)):
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
 
-        # SQL-запит: шукаємо стажера за юзернеймом
-        # УВАГА: Перевір, чи колонки з балами та статусом у тебе в Supabase
-        # називаються саме 'scores' і 'status'. Якщо інакше — впиши свої назви!
-        query = "SELECT username, scores, status FROM users WHERE username = %s;"
+        # SQL-запит: шукаємо стажера і беремо дані з двох таблиць
+        query = """
+            SELECT u.username, tr.score, tr.status 
+            FROM users u
+            LEFT JOIN test_results tr ON u.id = tr.user_id
+            WHERE u.username = %s
+            ORDER BY tr.finished_at DESC
+            LIMIT 1;
+        """
         cursor.execute(query, (clean_username,))
         user_data = cursor.fetchone()
 
