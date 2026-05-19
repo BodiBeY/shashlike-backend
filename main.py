@@ -4,7 +4,7 @@ import psycopg2
 app = FastAPI()
 
 # Твоя лінка до Supabase
-DATABASE_URL = "postgresql://postgres.pnwavouezfkinuktyiuh:ax._dD*-5$ZuPB@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+DATABASE_URL = "postgresql://postgres.pnwavouezfkinuktyiuh:ax._dD)*-5$ZuPB@aws-0-eu-west-1.pooler.supabase.com:6543/postgres"
 
 
 @app.get("/get_stat")
