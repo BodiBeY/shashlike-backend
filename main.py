@@ -85,3 +85,39 @@ def get_stat_by_quiz(username: str, quiz_id: int):
     if result:
         return {"found": True, "score": result[0], "status": result[1]}
     return {"found": False, "score": 0, "status": "Немає даних"}
+
+
+from pydantic import BaseModel
+
+# Модель даних для прийняття результату
+class TestResult(BaseModel):
+    username: str
+    quiz_id: int
+    score: int
+    status: str
+
+@app.post("/save_result")
+def save_result(data: TestResult):
+    conn = psycopg2.connect(DATABASE_URL)
+    cursor = conn.cursor()
+    
+    # 1. Знаходимо ID юзера за його username
+    cursor.execute("SELECT id FROM users WHERE username = %s;", (data.username,))
+    user = cursor.fetchone()
+    
+    if user:
+        user_id = user[0]
+        # 2. Вставляємо результат у таблицю
+        query = """
+            INSERT INTO test_results (user_id, quiz_id, score, status, finished_at)
+            VALUES (%s, %s, %s, %s, NOW());
+        """
+        cursor.execute(query, (user_id, data.quiz_id, data.score, data.status))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"message": "Результат збережено"}
+    
+    cursor.close()
+    conn.close()
+    return {"message": "Юзера не знайдено"}
