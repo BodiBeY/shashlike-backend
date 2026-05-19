@@ -124,4 +124,6 @@ def save_result(data: TestResult):
 
 @app.get("/get_quizzes_by_dept")
 def get_quizzes_by_dept(dept_id: int):
+    # Визначаємо змінну ПЕРЕД тим, як її повернути
+    list_of_quizzes = [{"id": 1, "name": "Тест 1"}, {"id": 2, "name": "Тест 2"}]
     return list_of_quizzes
