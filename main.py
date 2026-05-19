@@ -121,3 +121,7 @@ def save_result(data: TestResult):
     cursor.close()
     conn.close()
     return {"message": "Юзера не знайдено"}
+
+@app.get("/get_quizzes_by_dept")
+def get_quizzes_by_dept(dept_id: int):
+    return list_of_quizzes
