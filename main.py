@@ -69,8 +69,9 @@ def get_stat_by_quiz(username: str, quiz_id: int):
     conn = psycopg2.connect(DATABASE_URL)
     cursor = conn.cursor()
     
+    # Додаємо tr.quiz_id у SELECT
     query = """
-        SELECT tr.score, tr.status 
+        SELECT tr.score, tr.status, tr.quiz_id 
         FROM test_results tr
         JOIN users u ON u.id = tr.user_id
         WHERE u.username = %s AND tr.quiz_id = %s
@@ -83,8 +84,14 @@ def get_stat_by_quiz(username: str, quiz_id: int):
     conn.close()
     
     if result:
-        return {"found": True, "score": result[0], "status": result[1]}
-    return {"found": False, "score": 0, "status": "Немає даних"}
+        # Тепер повертаємо і quiz_id
+        return {
+            "found": True, 
+            "score": result[0], 
+            "status": result[1], 
+            "quiz_id": result[2]
+        }
+    return {"found": False, "score": 0, "status": "Немає даних", "quiz_id": quiz_id}
 
 
 from pydantic import BaseModel
