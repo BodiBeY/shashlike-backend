@@ -105,32 +105,34 @@ class TestResult(BaseModel):
 
 @app.post("/save_result")
 def save_result(data: TestResult):
-    conn = psycopg2.connect(DATABASE_URL)
-    cursor = conn.cursor()
-    
-    # 1. Знаходимо ID юзера за його username
-    cursor.execute("SELECT id FROM users WHERE username = %s;", (data.username,))
-    user = cursor.fetchone()
-    
-    if user:
-        user_id = user[0]
-        # 2. Вставляємо результат у таблицю
-        query = """
-            INSERT INTO test_results (user_id, quiz_id, score, status, finished_at)
-            VALUES (%s, %s, %s, %s, NOW());
-        """
-        cursor.execute(query, (user_id, data.quiz_id, data.score, data.status))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return {"message": "Результат збережено"}
-    
-    cursor.close()
-    conn.close()
-    return {"message": "Юзера не знайдено"}
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT id FROM users WHERE username = %s;", (data.username,))
+        user = cursor.fetchone()
+        
+        if user:
+            query = """
+                INSERT INTO test_results (user_id, quiz_id, score, status, finished_at)
+                VALUES (%s, %s, %s, %s, NOW());
+            """
+            cursor.execute(query, (user[0], data.quiz_id, data.score, data.status))
+            conn.commit()
+            return {"message": "Результат збережено"}
+        
+        return {"message": "Юзера не знайдено"}
+        
+    except Exception as e:
+        return {"message": f"Помилка бази даних: {str(e)}"}
+    finally:
+        if 'cursor' in locals(): cursor.close()
+        if 'conn' in locals(): conn.close()
 
 @app.get("/get_quizzes_by_dept")
 def get_quizzes_by_dept(dept_id: int):
     # Визначаємо змінну ПЕРЕД тим, як її повернути
     list_of_quizzes = [{"id": 1, "name": "Тест 1"}, {"id": 2, "name": "Тест 2"}]
     return list_of_quizzes
+
+
