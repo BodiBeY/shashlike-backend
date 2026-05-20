@@ -112,11 +112,11 @@ def save_result(data: TestResult):
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         
-        Перевіряємо, чи є юзер
+        #Перевіряємо, чи є юзер
         cursor.execute("SELECT id FROM users WHERE username = %s;", (data.username,))
         user = cursor.fetchone()
         
-        Якщо юзера немає — автоматично створюємо його
+        #Якщо юзера немає — автоматично створюємо його
         if not user:
             cursor.execute(
                 "INSERT INTO users (username, role) VALUES (%s, 'trainee') RETURNING id;", 
