@@ -108,6 +108,7 @@ class TestResult(BaseModel):
 
 @app.post("/save_result")
 def save_result(data: TestResult):
+    print(f"Отримані дані: {data}")
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
